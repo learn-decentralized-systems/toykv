@@ -82,7 +82,7 @@ func (kv *KeyValue) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterat
 		LowerBound: fro,
 		UpperBound: to,
 	}
-	kvi.iter, err = kv.DB.NewIter(&io)
+	kvi.iter = kv.DB.NewIter(&io)
 	return
 }
 
