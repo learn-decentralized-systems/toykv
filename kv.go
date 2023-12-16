@@ -72,7 +72,7 @@ func composeKey(lit byte, str fmt.Stringer) []byte {
 	return ret
 }
 
-func (kv *KeyValue) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterator, err error) {
+func (kv *KeyValue) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterator) {
 	fro := composeKey(lit, from)
 	to := composeKey(lit, till)
 	if bytes.Compare(fro, to) > 0 {
@@ -83,7 +83,14 @@ func (kv *KeyValue) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterat
 		UpperBound: to,
 	}
 	kvi.iter = kv.DB.NewIter(&io)
+	if !kvi.iter.SeekGE(fro) {
+		kvi.Close()
+	}
 	return
+}
+
+func (i *KeyValueIterator) Valid() bool {
+	return i.iter != nil && i.iter.Valid()
 }
 
 func (i *KeyValueIterator) Liter() byte {
@@ -122,8 +129,7 @@ func (i *KeyValueIterator) Next() bool {
 	}
 	ret := i.iter.Next()
 	if !ret {
-		_ = i.iter.Close()
-		i.iter = nil
+		i.Close()
 	}
 	return ret
 }

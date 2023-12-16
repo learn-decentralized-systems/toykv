@@ -47,7 +47,7 @@ type Int struct {
 }
 
 func (i Int) String() string {
-	return fmt.Sprintf("%d", i.i)
+	return fmt.Sprintf("%8d", i.i)
 }
 
 func (i *Int) Inc() {
@@ -72,17 +72,20 @@ func TestKeyValue_Range(t *testing.T) {
 
 	fro := Int{1100}
 	to := Int{2233}
-	rng, err := kv.Range('N', fro, to)
-	assert.Nil(t, err)
-	i = fro
 
-	for rng.Next() {
-		assert.Equal(t, 'N', rng.Liter())
+	i = fro
+	rng := kv.Range('N', fro, to)
+	for ; rng.Valid(); rng.Next() {
+		assert.Equal(t, uint8('N'), rng.Liter())
 		assert.Equal(t, i.String(), rng.Key())
-		assert.Equal(t, "now", rng.Value())
+		assert.Equal(t, "set", rng.Value())
 		i.Inc()
 	}
-	rng.Close()
+	assert.Equal(t, to.i, i.i)
+	assert.Equal(t, uint8(0), rng.Liter())
+	assert.Equal(t, "", rng.Value())
+	assert.Equal(t, "", rng.Key())
+	assert.False(t, rng.Next())
 
 	kv.Close()
 	assert.Nil(t, kv.DB)
