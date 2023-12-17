@@ -75,11 +75,12 @@ func TestKeyValue_Range(t *testing.T) {
 
 	i = fro
 	rng := kv.Range('N', fro, to)
-	for ; rng.Valid(); rng.Next() {
+	for rng.Valid() {
 		assert.Equal(t, uint8('N'), rng.Liter())
 		assert.Equal(t, i.String(), rng.Key())
 		assert.Equal(t, "set", rng.Value())
 		i.Inc()
+		rng.Next()
 	}
 	assert.Equal(t, to.i, i.i)
 	assert.Equal(t, uint8(0), rng.Liter())
