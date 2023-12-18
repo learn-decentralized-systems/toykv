@@ -11,7 +11,7 @@ import "github.com/stretchr/testify/assert"
 
 func TestKeyValue_Set(t *testing.T) {
 	_ = os.RemoveAll("store.db")
-	kv := KeyValue{}
+	kv := KeyValueStore{}
 	err := kv.Open("store.db")
 	assert.Nil(t, err)
 	assert.NotNil(t, kv.DB)
@@ -56,7 +56,7 @@ func (i *Int) Inc() {
 
 func TestKeyValue_Range(t *testing.T) {
 	_ = os.RemoveAll("range.store")
-	kv := KeyValue{}
+	kv := KeyValueStore{}
 	err := kv.Open("range.store")
 	assert.Nil(t, err)
 	assert.NotNil(t, kv.DB)

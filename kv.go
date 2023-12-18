@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type KeyValue struct {
+type KeyValueStore struct {
 	DB    *pebble.DB
 	batch pebble.Batch
 	sync  bool
@@ -16,7 +16,7 @@ type KeyValue struct {
 
 var ErrAlreadyOpen = errors.New("the database is already open")
 
-func (kv *KeyValue) Open(name string) (err error) {
+func (kv *KeyValueStore) Open(name string) (err error) {
 	if kv.DB != nil {
 		return ErrAlreadyOpen
 	}
@@ -28,19 +28,19 @@ func (kv *KeyValue) Open(name string) (err error) {
 	return
 }
 
-func (kv *KeyValue) Set(lit byte, key fmt.Stringer, value string) error {
+func (kv *KeyValueStore) Set(lit byte, key fmt.Stringer, value string) error {
 	k := composeKey(lit, key)
 	wo := pebble.WriteOptions{Sync: kv.sync}
 	return kv.batch.Set(k, []byte(value), &wo)
 }
 
-func (kv *KeyValue) Merge(lit byte, key fmt.Stringer, value string) error {
+func (kv *KeyValueStore) Merge(lit byte, key fmt.Stringer, value string) error {
 	k := composeKey(lit, key)
 	wo := pebble.WriteOptions{Sync: kv.sync}
 	return kv.batch.Merge(k, []byte(value), &wo)
 }
 
-func (kv *KeyValue) Commit() (err error) {
+func (kv *KeyValueStore) Commit() (err error) {
 	wo := pebble.WriteOptions{Sync: kv.sync}
 	err = kv.DB.Apply(&kv.batch, &wo)
 	if err == nil {
@@ -49,7 +49,7 @@ func (kv *KeyValue) Commit() (err error) {
 	return
 }
 
-func (kv *KeyValue) Get(lit byte, key fmt.Stringer) (value string, err error) {
+func (kv *KeyValueStore) Get(lit byte, key fmt.Stringer) (value string, err error) {
 	k := composeKey(lit, key)
 	val, closr, err := kv.DB.Get(k)
 	if err != nil {
@@ -72,7 +72,7 @@ func composeKey(lit byte, str fmt.Stringer) []byte {
 	return ret
 }
 
-func (kv *KeyValue) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterator) {
+func (kv *KeyValueStore) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterator) {
 	fro := composeKey(lit, from)
 	to := composeKey(lit, till)
 	if bytes.Compare(fro, to) > 0 {
@@ -141,7 +141,7 @@ func (i *KeyValueIterator) Close() {
 	}
 }
 
-func (kv *KeyValue) Close() {
+func (kv *KeyValueStore) Close() {
 	if kv.DB != nil {
 		_ = kv.DB.Close()
 		kv.DB = nil
