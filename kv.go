@@ -3,7 +3,6 @@ package toykv
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"github.com/cockroachdb/pebble"
 	"strings"
 )
@@ -28,13 +27,13 @@ func (kv *KeyValueStore) Open(name string) (err error) {
 	return
 }
 
-func (kv *KeyValueStore) Set(lit byte, key fmt.Stringer, value string) error {
+func (kv *KeyValueStore) Set(lit byte, key string, value string) error {
 	k := composeKey(lit, key)
 	wo := pebble.WriteOptions{Sync: kv.sync}
 	return kv.batch.Set(k, []byte(value), &wo)
 }
 
-func (kv *KeyValueStore) Merge(lit byte, key fmt.Stringer, value string) error {
+func (kv *KeyValueStore) Merge(lit byte, key string, value string) error {
 	k := composeKey(lit, key)
 	wo := pebble.WriteOptions{Sync: kv.sync}
 	return kv.batch.Merge(k, []byte(value), &wo)
@@ -49,7 +48,7 @@ func (kv *KeyValueStore) Commit() (err error) {
 	return
 }
 
-func (kv *KeyValueStore) Get(lit byte, key fmt.Stringer) (value string, err error) {
+func (kv *KeyValueStore) Get(lit byte, key string) (value string, err error) {
 	k := composeKey(lit, key)
 	val, closr, err := kv.DB.Get(k)
 	if err != nil {
@@ -64,15 +63,14 @@ type KeyValueIterator struct {
 	iter *pebble.Iterator
 }
 
-func composeKey(lit byte, str fmt.Stringer) []byte {
-	s := str.String()
-	ret := make([]byte, 0, len(s)+1)
+func composeKey(lit byte, str string) []byte {
+	ret := make([]byte, 0, len(str)+1)
 	ret = append(ret, lit)
-	ret = append(ret, s...)
+	ret = append(ret, str...)
 	return ret
 }
 
-func (kv *KeyValueStore) Range(lit byte, from, till fmt.Stringer) (kvi KeyValueIterator) {
+func (kv *KeyValueStore) Range(lit byte, from, till string) (kvi KeyValueIterator) {
 	fro := composeKey(lit, from)
 	to := composeKey(lit, till)
 	if bytes.Compare(fro, to) > 0 {

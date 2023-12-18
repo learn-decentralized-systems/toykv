@@ -17,23 +17,23 @@ func TestKeyValue_Set(t *testing.T) {
 	assert.NotNil(t, kv.DB)
 
 	now := time.Now()
-	err = kv.Merge('T', now, "now")
+	err = kv.Merge('T', now.String(), "now")
 	assert.Nil(t, err)
-	_, err = kv.Get('T', now)
+	_, err = kv.Get('T', now.String())
 	assert.Equal(t, pebble.ErrNotFound, err)
 	err = kv.Commit()
 	assert.Nil(t, err)
-	str, err := kv.Get('T', now)
+	str, err := kv.Get('T', now.String())
 	assert.Nil(t, err)
 	assert.Equal(t, "now", str)
 
-	err = kv.Merge('T', now, " is ")
+	err = kv.Merge('T', now.String(), " is ")
 	assert.Nil(t, err)
-	err = kv.Merge('T', now, now.String())
+	err = kv.Merge('T', now.String(), now.String())
 	assert.Nil(t, err)
 	err = kv.Commit()
 	assert.Nil(t, err)
-	str, err = kv.Get('T', now)
+	str, err = kv.Get('T', now.String())
 	assert.Nil(t, err)
 	assert.Equal(t, "now is "+now.String(), str)
 
@@ -63,7 +63,7 @@ func TestKeyValue_Range(t *testing.T) {
 	i := Int{0}
 
 	for i.i < 1<<20 {
-		err = kv.Set('N', i, "set")
+		err = kv.Set('N', i.String(), "set")
 		assert.Nil(t, err)
 		i.Inc()
 	}
@@ -74,7 +74,7 @@ func TestKeyValue_Range(t *testing.T) {
 	to := Int{2233}
 
 	i = fro
-	rng := kv.Range('N', fro, to)
+	rng := kv.Range('N', fro.String(), to.String())
 	for rng.Valid() {
 		assert.Equal(t, uint8('N'), rng.Liter())
 		assert.Equal(t, i.String(), rng.Key())
